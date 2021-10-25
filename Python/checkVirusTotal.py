@@ -55,7 +55,7 @@ def getFileInfo(file):
         return
     analysis = vtInfo.to_dict()
 
-    if analysis['attributes']['last_analysis_stats']['malicious'] > 0 or analysis['attributes']['last_analysis_stats']['suspicious'] > 0 or analysis['attributes']['last_analysis_stats']['timeout'] > 0 or analysis['attributes']['last_analysis_stats']['confirmed-timeout'] > 0:
+    if analysis['attributes']['last_analysis_stats']['malicious'] > 0 or analysis['attributes']['last_analysis_stats']['suspicious'] > 0 or analysis['attributes']['last_analysis_stats']['timeout'] > 25 or analysis['attributes']['last_analysis_stats']['confirmed-timeout'] > 25:
         printSus(file, analysis)
         return
     if analysis['attributes']['first_submission_date'] > min_first_submit:
