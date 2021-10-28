@@ -4,9 +4,8 @@
 #include <stdio.h>
 
 typedef void* HANDLE;
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-int dllSize = 0;
+size_t dllSize = 0;
 char *dll = NULL;
 
 int is64bit(long pid) {
@@ -35,7 +34,7 @@ int is64bit(long pid) {
         return 1;
 }
 
-//det PID of the first 32 bit process
+//get PID of the first 32 bit process
 int findPidOf32BitProcess(){
     PROCESSENTRY32 pe32;
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
@@ -80,25 +79,13 @@ int findPidOfProcess(char process[25]){
 }
 
 
-
+//get offset of overlay
 int getSizeOfPeFile(){
-    /*
-    //PEB* pPeb = GetCurrentPebProcess ();
-    //printf("%4x", *baseAddress);
-    printf("Address>%4x , Value>%4x\n", &__ImageBase, __ImageBase);
-    printf("Address>%4x , Value>%4x\n", &__ImageBase.e_lfanew, __ImageBase.e_lfanew);
-    printf("Value>%4x\n", (DWORD *)((int)&__ImageBase +  __ImageBase.e_lfanew));
-    IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)((int)&__ImageBase +  __ImageBase.e_lfanew);
-    printf("Address>%4x , Value>%4x\n", &INH->Signature, INH->Signature);
-    */
-
     HMODULE baseAddress = GetModuleHandle(NULL);
+
     IMAGE_DOS_HEADER* IDH = (IMAGE_DOS_HEADER*)baseAddress;
-    //printf("Address>%4x , Value>%4x\n", &IDH, IDH);
+
     IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)((int)baseAddress + IDH->e_lfanew);
-    //printf("Address>%4x , Value>%4x\n", &INH, INH);
-    
-    
 
     int size = INH->OptionalHeader.SizeOfHeaders;
 
@@ -110,26 +97,47 @@ int getSizeOfPeFile(){
 
     for (int i = 0; i < INH->FileHeader.NumberOfSections; i++) {
         PIMAGE_SECTION_HEADER sectionHeader = (PIMAGE_SECTION_HEADER)sectionLocation;
-        printf("%s\n",sectionHeader->Name);
         size = size + sectionHeader->SizeOfRawData;
-        if (importDirectoryRVA >= sectionHeader->VirtualAddress && importDirectoryRVA < sectionHeader->VirtualAddress + sectionHeader->Misc.VirtualSize) {
-            //break;
-        }
-        printf("Address>%4x , Value>%4x\n", &sectionLocation, sectionLocation);
         sectionLocation = sectionLocation +sectionSize;
-        printf("Address>%4x , Value>%4x\n", &sectionLocation, sectionLocation);
     }
 
     return size;
 }   
 
 void getOverlay(){
-    int size = getSizeOfPeFile();
-    printf("%d", size);
-    exit(0);
+    int offsetOfOvelray = getSizeOfPeFile();
+    char *fileName = (char *)malloc(MAX_PATH);
+    GetModuleFileNameA(NULL,fileName,MAX_PATH);
+    if( strlen(fileName) == 0){
+        perror("Could not retrive filename.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    FILE *fp = fopen(fileName, "r"); // read mode
+
+    if (fp == NULL){
+        perror("Error while opening the file.\n");
+        exit(EXIT_FAILURE);
+    }
+
+
+    long int sizeOfFile = ftell(fp);
+
+    if ( fseek(fp, offsetOfOvelray, SEEK_SET) != 0 ) {
+        perror("Could not set the file position.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fread(&dllSize, 4, 1, fp); //first 4 bytes of overlay are size of the file
+
+    dll = (char *)malloc(dllSize);
+
+    fread(dll, 16, dllSize/16, fp);
+
+    fclose(fp);
 }
 
-//create DLL on disk
+//create DLL on disks
 char* dropDll(){
     HANDLE hFile;
     char *fileName = "dll.dll";
@@ -220,10 +228,13 @@ int main(int argc, char *argv[]){
         //first argument shoudl be taret process name
         if(strlen(argv[1]) < 25){
             strcpy(process, argv[1]);
-        }    
+        }else{
+            //pokial sa argument nezmensti do pola, tak sa vlozi defualtny process
+            goto Default;
+        }   
     }else{
         //default process name
-        process[0] = 0x00; // if no process name is provided, program injects dll to the fisrt 32 bit porcess found
+        Default:process[0] = 0x00; // if no process name is provided, program injects dll to the fisrt 32 bit porcess found
 
     }
 
