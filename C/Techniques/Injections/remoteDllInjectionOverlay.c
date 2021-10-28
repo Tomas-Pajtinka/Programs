@@ -113,9 +113,11 @@ int getSizeOfPeFile(){
         printf("%s\n",sectionHeader->Name);
         size = size + sectionHeader->SizeOfRawData;
         if (importDirectoryRVA >= sectionHeader->VirtualAddress && importDirectoryRVA < sectionHeader->VirtualAddress + sectionHeader->Misc.VirtualSize) {
-            break;
+            //break;
         }
-        sectionLocation += sectionSize;
+        printf("Address>%4x , Value>%4x\n", &sectionLocation, sectionLocation);
+        sectionLocation = sectionLocation +sectionSize;
+        printf("Address>%4x , Value>%4x\n", &sectionLocation, sectionLocation);
     }
 
     return size;
