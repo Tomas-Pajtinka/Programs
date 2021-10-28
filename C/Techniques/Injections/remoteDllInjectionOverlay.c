@@ -82,16 +82,25 @@ int findPidOfProcess(char process[25]){
 
 
 int getSizeOfPeFile(){
-    HMODULE baseAddress = GetModuleHandle(NULL);
+    /*
     //PEB* pPeb = GetCurrentPebProcess ();
     //printf("%4x", *baseAddress);
+    printf("Address>%4x , Value>%4x\n", &__ImageBase, __ImageBase);
+    printf("Address>%4x , Value>%4x\n", &__ImageBase.e_lfanew, __ImageBase.e_lfanew);
+    printf("Value>%4x\n", (DWORD *)((int)&__ImageBase +  __ImageBase.e_lfanew));
+    IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)((int)&__ImageBase +  __ImageBase.e_lfanew);
+    printf("Address>%4x , Value>%4x\n", &INH->Signature, INH->Signature);
+    */
+
+    HMODULE baseAddress = GetModuleHandle(NULL);
     IMAGE_DOS_HEADER* IDH = (IMAGE_DOS_HEADER*)baseAddress;
-    printf("%80x", __ImageBase);
-    IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)baseAddress + IDH->e_lfanew;
-    printf("%4x", INH);
+    //printf("Address>%4x , Value>%4x\n", &IDH, IDH);
+    IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)((int)baseAddress + IDH->e_lfanew);
+    //printf("Address>%4x , Value>%4x\n", &INH, INH);
+    
+    
+
     int size = INH->OptionalHeader.SizeOfHeaders;
-    
-    
 
     DWORD sectionLocation = (DWORD)INH + sizeof(DWORD) /*PE signature*/ + (DWORD)(sizeof(IMAGE_FILE_HEADER)) + (DWORD)INH->FileHeader.SizeOfOptionalHeader;
 
@@ -101,10 +110,12 @@ int getSizeOfPeFile(){
 
     for (int i = 0; i < INH->FileHeader.NumberOfSections; i++) {
         PIMAGE_SECTION_HEADER sectionHeader = (PIMAGE_SECTION_HEADER)sectionLocation;
+        printf("%s\n",sectionHeader->Name);
         size = size + sectionHeader->SizeOfRawData;
         if (importDirectoryRVA >= sectionHeader->VirtualAddress && importDirectoryRVA < sectionHeader->VirtualAddress + sectionHeader->Misc.VirtualSize) {
             break;
         }
+        sectionLocation += sectionSize;
     }
 
     return size;
