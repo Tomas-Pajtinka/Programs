@@ -241,6 +241,7 @@ int apcDllInjection(){
         return 5; //Could not write to remote process
     }
 
+
     if(QueueUserAPC(loadLibraryAddress, hAlertableThread, (ULONG_PTR)allocAddress)){
         return 9;
     }
