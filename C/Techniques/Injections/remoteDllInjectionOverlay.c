@@ -4,8 +4,6 @@
 #include <stdio.h>
 
 
-
-
 typedef void* HANDLE;
 
 size_t dllSize = 0;
@@ -49,7 +47,6 @@ int findPidOf32BitProcess(){
    
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
     if (hProcessSnap == INVALID_HANDLE_VALUE) {
-        //vrati 0; pokial sa nevytvoril snapshot
         return 0;
     }
     pe32.dwSize = sizeof(PROCESSENTRY32); //according the documentation, size must be set first
@@ -75,7 +72,6 @@ int findPidOfProcess(char process[25]){
     PROCESSENTRY32 pe32;
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
     if (hProcessSnap == INVALID_HANDLE_VALUE) {
-        //vrati 0; pokial sa nevytvoril snapshot
         return 0;
     }
     pe32.dwSize = sizeof(PROCESSENTRY32); //according the documentation, size must be set first
