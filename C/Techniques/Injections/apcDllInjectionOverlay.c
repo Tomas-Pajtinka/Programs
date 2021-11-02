@@ -238,7 +238,6 @@ int apcDllInjection(){
     }
 
     if(QueueUserAPC(loadLibraryAddress, hAlertableThread, (ULONG_PTR)allocAddress) == 0){
-        printf("Error %d\n", GetLastError());
         return 9;
     }
 
