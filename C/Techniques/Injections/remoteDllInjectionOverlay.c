@@ -226,6 +226,7 @@ int remoteDllInjection(char process[25]){
     if(VirtualFreeEx(hProcess, allocAddress, 0, MEM_RELEASE) == 0){
         return 8; // Could not free address in remote process
     }
+    CloseHandle(hNewThread);
     CloseHandle(hProcess);
     return 0;
 
