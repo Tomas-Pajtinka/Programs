@@ -186,10 +186,9 @@ int findAlertableThread(HANDLE hKernel32, int remoteThreadHandlesCount){
     for(i=0; i<remoteThreadHandlesCount; i++) {
         CloseHandle(eventHandlesArray[i]);
         CloseHandle(duplicateHandles[i]);
-        if(threadHandlesArray[i] != hAlertableThread) 
+        if(index != i) 
             CloseHandle(threadHandlesArray[i]);
     }
-
     return index;
 }
 
@@ -214,7 +213,6 @@ int apcDllInjection(){
     HANDLE hAlertableThread = threadHandlesArray[index];
     pid = processPidsArray[index];
 
-    printf("%d\n", pid);
     
     if (hAlertableThread == NULL){
         return 10;
@@ -241,14 +239,12 @@ int apcDllInjection(){
         return 5; //Could not write to remote process
     }
 
-
     if(QueueUserAPC(loadLibraryAddress, hAlertableThread, (ULONG_PTR)allocAddress)){
         return 9;
     }
 
     CloseHandle(hProcess);
     return 0;
-
 }
 
 
