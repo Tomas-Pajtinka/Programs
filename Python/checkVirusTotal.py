@@ -63,7 +63,7 @@ def getFileInfo(file):
         else:
             print("Error >> " + file )
             print(e)
-            return
+            exit()
     analysis = vtInfo.to_dict()
 
     if analysis['attributes']['last_analysis_stats']['malicious'] > 0 or analysis['attributes']['last_analysis_stats']['suspicious'] > 0 or analysis['attributes']['last_analysis_stats']['timeout'] > 25 or analysis['attributes']['last_analysis_stats']['confirmed-timeout'] > 25:
@@ -107,7 +107,7 @@ def listInputFile(input):
     with open(input, "r") as file:
         while True:
             line = file.readline()
-            if line is None:
+            if line == "":
                 break
             getFilesInfo(line.rstrip())
 
