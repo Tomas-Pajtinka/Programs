@@ -27,7 +27,7 @@ int remoteDllInjection(char process[25]){
     struct Payload payload;
     payload.payloadSize = dllSize;
     payload.payloadData = dll;
-    char *dllPath = (char *)dropPayloadOnDisk("remoteDllInjection2.dll", payload);
+    char *dllPath = (char *)dropPayloadOnDisk("remoteDllInjection.dll", payload);
     if (dllPath == 0){
         perror("Injection failed. DLL could not be created.\n");
         exit(EXIT_FAILURE);
