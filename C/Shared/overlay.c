@@ -24,7 +24,7 @@ int getSizeOfPeFile(){
     return size;
 }   
 
-void getOverlay(struct Overlay overlay){
+void getOverlay(struct Overlay *overlay){
     int offsetOfOverlay = getSizeOfPeFile();
     char *fileName = (char *)malloc(MAX_PATH);
     GetModuleFileNameA(NULL,fileName,MAX_PATH);
@@ -42,8 +42,8 @@ void getOverlay(struct Overlay overlay){
         perror("Could not set the file position.\n");
         exit(EXIT_FAILURE);
     }
-    fread(&overlay.overlaySize, 4, 1, fp); //first 4 bytes of overlay are size of the file
-    overlay.overlayData = (char *)malloc(overlay.overlaySize);
-    fread(overlay.overlayData, 1, overlay.overlaySize, fp);
+    fread(&overlay->overlaySize, 4, 1, fp); //first 4 bytes of overlay are size of the overlay
+    overlay->overlayData = (char *)malloc(overlay->overlaySize);
+    fread(overlay->overlayData, 1, overlay->overlaySize, fp);
     fclose(fp);
 }
