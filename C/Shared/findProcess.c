@@ -40,7 +40,6 @@ int findPidOf32BitProcess(int minPid){
     pe32.dwSize = sizeof(PROCESSENTRY32); //according the documentation, size must be set first
     if (Process32First(hProcessSnap, &pe32)){   //get first process
         if (is64bit(pe32.th32ProcessID) == 0 && pe32.th32ProcessID > minPid){ //check if is 32 bit
-            printf("%s > %d\n", pe32.szExeFile, pe32.th32ProcessID);
             if (strcmp(pe32.szExeFile, processFileName) != 0){ //compare process names
                 return pe32.th32ProcessID;
             }
@@ -48,7 +47,6 @@ int findPidOf32BitProcess(int minPid){
     }
     while(Process32Next(hProcessSnap, &pe32)){
         if (is64bit(pe32.th32ProcessID) == 0 && pe32.th32ProcessID > minPid){ //check if is 32 bit
-            printf("%s\n", pe32.szExeFile);
             if (strcmp(pe32.szExeFile, processFileName) != 0){ //compare process names
                 return pe32.th32ProcessID;
             }
