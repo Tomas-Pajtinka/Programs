@@ -54,3 +54,25 @@ int findPidOf32BitProcess(){
     }
     return 0;
 }
+
+//find PID of prcoess
+int findPidOfProcess(char process[25]){
+    PROCESSENTRY32 pe32;
+    HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
+    if (hProcessSnap == INVALID_HANDLE_VALUE) {
+        //vrati 0; pokial sa nevytvoril snapshot
+        return 0;
+    }
+    pe32.dwSize = sizeof(PROCESSENTRY32); //according the documentation, size must be set first
+    if (Process32First(hProcessSnap, &pe32)){   //get first process
+        if (strcmp(pe32.szExeFile, process) == 0){ //compare process names
+            return pe32.th32ProcessID;
+        }
+    }
+    while(Process32Next(hProcessSnap, &pe32)){
+        if (strcmp(pe32.szExeFile, process) == 0){ //compare process names
+            return pe32.th32ProcessID;
+        }
+    }
+    return 0;
+}
