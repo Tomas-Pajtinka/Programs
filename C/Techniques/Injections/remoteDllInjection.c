@@ -87,12 +87,12 @@ int main(int argc, char *argv[]){
         if(strlen(argv[1]) < 25){
             strcpy(process, argv[1]);
         }else{
-            //pokial sa argument nezmensti do pola, tak sa vlozi defualtny process
             goto Default;
         }   
     }else{
         //default process name
-        Default:process[0] = 0; // if no process name is provided, program injects dll to the fisrt 32 bit porcess found, this is bad on 32 bit OS because first processes are usually priviledges which could not be injected
+        Default:process[0] = 0x30; // if no process name is provided, program injects dll to the fisrt 32 bit porcess found, this is bad on 32 bit OS because first processes are usually priviledges which could not be injected
+        process[1] = 0x00;
     }
 
     remoteDllInjection(process);
