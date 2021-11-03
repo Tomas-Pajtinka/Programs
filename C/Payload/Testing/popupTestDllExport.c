@@ -3,11 +3,7 @@
 typedef void* HANDLE;
 
 __declspec(dllexport) void hookExport(){
-   HANDLE hSemaphore = OpenSemaphoreA(SYNCHRONIZE, FALSE, "HookSemaphore"); 
-   if (hSemaphore != NULL){
-      MessageBox(0,"Mutex Released.","Message from DLL",0);
-      ReleaseSemaphore(hSemaphore, 1, NULL);
-   }
+   HANDLE hMutex = CreateMutexA(NULL, FALSE, "HookMutex"); 
    MessageBox(0,"Injection of process successfull.","Message from DLL",0);
 }
 
