@@ -85,21 +85,6 @@ void __attribute__ ((destructor)) remoteDllInjection(){
 
 
 int main(int argc, char *argv[]){
-    char process[25];
-    if (argc > 1){ 
-        //first argument shoudl be taret process name or minimum process PID
-        if(strlen(argv[1]) < 25){
-            strcpy(process, argv[1]);
-        }else{
-            goto Default;
-        }   
-    }else{
-        //default process name
-        Default:process[0] = 0x30; // if no process name is provided, program injects dll to the fisrt 32 bit porcess found, this is bad on 32 bit OS because first processes are usually priviledges which could not be injected
-        process[1] = 0x00;
-    }
-
-    remoteDllInjection(process);
-    
+    puts("Hello Wordl!");
     return 0;
 }
