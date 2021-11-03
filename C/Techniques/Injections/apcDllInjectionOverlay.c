@@ -9,7 +9,7 @@
 
 typedef void* HANDLE;
 
-int apcDllInjection(){
+void apcDllInjection(){
     LPVOID loadLibraryAddress = NULL;
     HMODULE hKernel32 = GetModuleHandle(TEXT("kernel32.dll"));
     if (hKernel32 != 0){
@@ -82,7 +82,6 @@ int apcDllInjection(){
 
     CloseHandle(hProcess);
     puts("Injection successfull.");
-    return 0;
 }
 
 
