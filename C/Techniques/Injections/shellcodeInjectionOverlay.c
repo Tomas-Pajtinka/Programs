@@ -19,7 +19,6 @@ void remoteExeInjection(){
         exit(EXIT_FAILURE);
     }
 
-    printf("%4d\n", pid);
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (hProcess == INVALID_HANDLE_VALUE){
         perror("Injection failed. Process could not be opened.\n");
