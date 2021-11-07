@@ -70,10 +70,5 @@ int setWindowsHookExDllInjection(){
     for (int i = 0; i < tids.itemsCount; i++){
         UnhookWindowsHookEx(hHooks[i]);
     }
-    puts("Injection successfull.");
 }
 
-int main(int argc, char *argv[]){
-    setWindowsHookExDllInjection();
-    return 0;
-}
