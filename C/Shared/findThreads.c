@@ -1,6 +1,5 @@
 #include <windows.h>
 #include <TlHelp32.h> 
-#include "findProcess.c"
 
 struct Handles{
     HANDLE threadHandlesArray[MAXIMUM_WAIT_OBJECTS];
