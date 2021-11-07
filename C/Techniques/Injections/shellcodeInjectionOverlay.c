@@ -42,11 +42,5 @@ void remoteExeInjection(){
         exit(EXIT_FAILURE);
     }
 
-    puts("Injection successfull.");
-
 }
 
-int main(int argc, char *argv[]){
-    remoteExeInjection();
-    return 0;
-}
