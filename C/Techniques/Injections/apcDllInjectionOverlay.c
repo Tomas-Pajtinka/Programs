@@ -81,11 +81,8 @@ void apcDllInjection(){
     }
 
     CloseHandle(hProcess);
-    puts("Injection successfull.");
+    
 }
 
 
-int main(int argc, char *argv[]){
-    apcDllInjection();
-    return 0;
-}
+
