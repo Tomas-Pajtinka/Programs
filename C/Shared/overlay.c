@@ -1,7 +1,6 @@
 #include <windows.h>
 #include <TlHelp32.h> 
 #include <stdio.h>
-#include "peParser.c"
 
 struct Overlay{
     int overlaySize;
