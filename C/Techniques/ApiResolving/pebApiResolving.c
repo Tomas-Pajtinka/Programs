@@ -1,4 +1,3 @@
-
 #include <windows.h>
 #include <winternl.h>
 #include <TlHelp32.h> 
@@ -29,8 +28,11 @@ void* inicialize(){
     PEB* peb = getPeb();
     for(PLIST_ENTRY pListEntry = peb->Ldr->InMemoryOrderModuleList.Flink; pListEntry && pListEntry != &peb->Ldr->InMemoryOrderModuleList; pListEntry = pListEntry->Flink){
         PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = CONTAINING_RECORD(pListEntry, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
-        char *dllName = convertUnicodeToAscii(pLdrDataTableEntry->FullDllName);
-        printf("%s\n",dllName);
+        char *fullDllName = convertUnicodeToAscii(pLdrDataTableEntry->FullDllName);
+        char *baseDllName = getLastItemFromPath(fullDllName);
+        printf("%s\n",baseDllName);
+
+        free(fullDllName);
     }
     system("pause");
 
