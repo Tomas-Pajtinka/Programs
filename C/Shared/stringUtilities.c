@@ -5,7 +5,7 @@ char * convertUnicodeToAscii(UNICODE_STRING unicode){
     char *ascii = malloc(MAX_PATH);
     int u = 0;
     for(; u < unicode.Length/2 ; u++){
-        ascii[u] = (unicode.Buffer+u)[0];//ch[0];
+        ascii[u] = (unicode.Buffer+u)[0];
     }
     ascii[u] = 0x00;
     return ascii;
