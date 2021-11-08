@@ -12,6 +12,7 @@ char * convertUnicodeToAscii(UNICODE_STRING unicode){
 }
 
 void getLastItemFromPath(char *module){
-    char *processFileName;
-    (processFileName = strrchr(module, '\\')) ? ++processFileName : (processFileName = module);   //get last item from path
+    char *lastItem;
+    (lastItem = strrchr(module, '\\')) ? ++lastItem : (lastItem = module);   //get last item from path
+    return lastItem;
 }
