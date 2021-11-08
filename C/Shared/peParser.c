@@ -13,7 +13,7 @@ size_t alignSize(DWORD aligment, DWORD size){
 
 
 //function loads PE into memory
-void loadPeToProcess(struct Executable *executable){
+void loadPeToRemoteProcess(struct Executable *executable){
     //parse DOS and PE header
     IMAGE_DOS_HEADER* IDH = (IMAGE_DOS_HEADER*)executable->executableData;
     IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)((int)executable->executableData + IDH->e_lfanew);
