@@ -1,1 +1,2 @@
+"C:\Program Files (x86)\mingw-w64\i686-7.3.0-win32-dwarf-rt_v5-rev0\mingw32\bin\gcc.exe" -m32  -o main.exe main.c
 
