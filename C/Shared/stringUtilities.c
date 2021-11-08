@@ -11,7 +11,7 @@ char * convertUnicodeToAscii(UNICODE_STRING unicode){
     return ascii;
 }
 
-void getLastItemFromPath(char *module){
+char * getLastItemFromPath(char *module){
     char *lastItem;
     (lastItem = strrchr(module, '\\')) ? ++lastItem : (lastItem = module);   //get last item from path
     return lastItem;
