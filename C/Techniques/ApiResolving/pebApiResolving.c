@@ -3,8 +3,9 @@
 #include <TlHelp32.h> 
 #include <stdio.h>
 //#include "..\..\Shared\stringUtilities.c"
+#include "..\..\Shared\peParser.c"
 
-FARPROC loadLibrary = NULL, getProcAddress = NULL;
+DWORD (*loadLibrary)(LPCSTR) = NULL, (*getProcAddress)(HMODULE, LPCSTR) = NULL;
 
 #ifdef _M_IX86
 	int unicodeNameOffset = 0x28;
@@ -30,14 +31,35 @@ void* inicialize(){
         PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = CONTAINING_RECORD(pListEntry, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
         char *fullDllName = convertUnicodeToAscii(pLdrDataTableEntry->FullDllName);
         char *baseDllName = getLastItemFromPath(fullDllName);
-        printf("%s\n",baseDllName);
-
+        if(strcicmp(baseDllName, "kernel32.dll") == 0){
+            struct Executable dll;
+            dll.executableData = pLdrDataTableEntry->DllBase;
+            dll.executableSize = 0;
+            loadLibrary = getAddressOfExport(&dll, "LoadLibraryA");
+            getProcAddress = getAddressOfExport(&dll, "GetProcAddress");
+            break;
+        }
         free(fullDllName);
     }
-    system("pause");
-
+    if (loadLibrary == NULL){
+        perror("Could not find LoadLibrary address.\n");
+        exit(EXIT_FAILURE);
+    }
+    if(getProcAddress == NULL){
+        perror("Could not find GetProcAddress address.\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
-FARPROC resolveApi(){
-
+FARPROC resolveApi(char *api, char *dll){
+    if (loadLibrary == NULL || getProcAddress == NULL){
+        perror("Need to call inicialize function first.\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("%4x\n",loadLibrary );
+    HANDLE hLibrary = LoadLibraryA(dll); //loadLibrary(dll);
+    printf("%4x\n",hLibrary );
+    hLibrary = loadLibrary(dll);
+    printf("%4x\n",hLibrary );
+    return getProcAddress(hLibrary, api);
 }
