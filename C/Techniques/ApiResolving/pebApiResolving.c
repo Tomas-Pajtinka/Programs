@@ -5,7 +5,8 @@
 //#include "..\..\Shared\stringUtilities.c"
 #include "..\..\Shared\peParser.c"
 
-DWORD (*loadLibrary)(LPCSTR) = NULL, (*getProcAddress)(HMODULE, LPCSTR) = NULL;
+FARPROC (*loadLibrary)(LPCSTR) = NULL; 
+FARPROC (*getProcAddress)(HMODULE, LPCSTR) = NULL;
 
 #ifdef _M_IX86
 	int unicodeNameOffset = 0x28;
@@ -36,7 +37,7 @@ void* inicialize(){
             dll.executableData = pLdrDataTableEntry->DllBase;
             dll.executableSize = 0;
             loadLibrary = getAddressOfExport(&dll, "LoadLibraryA");
-            getProcAddress = getAddressOfExport(&dll, "GetProcAddress");
+            getProcAddress = getAddressOfExport(&dll, "GetProcessAffinityMask");
             break;
         }
         free(fullDllName);
@@ -56,10 +57,6 @@ FARPROC resolveApi(char *api, char *dll){
         perror("Need to call inicialize function first.\n");
         exit(EXIT_FAILURE);
     }
-    printf("%4x\n",loadLibrary );
-    HANDLE hLibrary = LoadLibraryA(dll); //loadLibrary(dll);
-    printf("%4x\n",hLibrary );
-    hLibrary = loadLibrary(dll);
-    printf("%4x\n",hLibrary );
-    return getProcAddress(hLibrary, api);
+    HANDLE hLibrary = loadLibrary(dll);
+    return  getProcAddress(hLibrary, api);
 }
