@@ -3,9 +3,9 @@
 
 int main(int argc, char *argv[]){
     inicialize();
-    void (*mb)(HWND, LPCTSTR, LPCTSTR, UINT) = resolveApi("MessageBox", "User32.dll");
-    mb(0,"Injection of process successfull.","Message from DLL",0);
-    puts("Injection successfull.");
+    void (*mb)(HWND, LPCTSTR, LPCTSTR, UINT) = resolveApi("MessageBoxA", "User32.dll");
+    mb(0,"Dynamic API resolve succesfull.","Dynamic API resolve",0);
+    puts("Resolving successfull.");
     return 0;
 }
 
