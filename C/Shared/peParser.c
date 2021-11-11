@@ -6,11 +6,6 @@ struct Executable{
     char *executableData;
 } executable, *executablePtr;
 
-//align size according to aligment
-size_t alignSize(DWORD aligment, DWORD size){
-    return (size_t)(((size / aligment) + 1) * aligment);
-}
-
 
 //function loads PE into memory
 void loadPeToRemoteProcess(struct Executable *executable){
@@ -96,9 +91,9 @@ DWORD getAddressOfExport(struct Executable *executable, char *export){
     PIMAGE_EXPORT_DIRECTORY exportDescriptor = (PIMAGE_EXPORT_DIRECTORY)(exportsDirectory.VirtualAddress + (DWORD_PTR)executable->executableData);
     DWORD exportNames = (DWORD_PTR)executable->executableData + exportDescriptor->AddressOfNames;
     DWORD exportFunctionAddress = (DWORD_PTR)executable->executableData + exportDescriptor->AddressOfFunctions;
-    exportNames -= 8;//I dont know why I have to repair index
+    exportNames -= 4;//I dont know why I have to repair index
     for (int index = 0; index < exportDescriptor->NumberOfNames; index++){
-        if( strcmpi( (char *)((int)*(DWORD **)exportNames + (int)executable->executableData), export) == 0){ //compares the export name with the searched export name 
+        if( strcicmp( (char *)((int)*(DWORD **)exportNames + (int)executable->executableData), export) == 0){ //compares the export name with the searched export name 
             //export was found
             return (int)*(DWORD **)exportFunctionAddress + (int)executable->executableData;
             break;
