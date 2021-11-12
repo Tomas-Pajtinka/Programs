@@ -53,7 +53,12 @@ def submitFile(file, hash):
     return client.get_object("/files/" + hash)
 
 def getFileInfo(file):
-    hash = sha256sum(file)
+    try:
+        hash = sha256sum(file)
+    except Exception as e:
+        print("Error >> " + file )
+        print(e)
+        return
     try:
         vtInfo = client.get_object("/files/" + hash)
     except Exception as e:
@@ -63,24 +68,28 @@ def getFileInfo(file):
         else:
             print("Error >> " + file )
             print(e)
+            client.close()
             exit()
     analysis = vtInfo.to_dict()
 
-    if analysis['attributes']['last_analysis_stats']['malicious'] > 0 or analysis['attributes']['last_analysis_stats']['suspicious'] > 0 or analysis['attributes']['last_analysis_stats']['timeout'] > 25 or analysis['attributes']['last_analysis_stats']['confirmed-timeout'] > 25:
-        printSus(file, analysis)
-        return
-        
-    if analysis['attributes']['first_submission_date'] > min_first_submit:
-        printTime(file, analysis)
-        return
-
-    if analysis['attributes']['last_analysis_date'] < min_last_analysis:
-        vtInfo = submitFile(file, hash)
-        analysis = vtInfo.to_dict()
+    try:
         if analysis['attributes']['last_analysis_stats']['malicious'] > 0 or analysis['attributes']['last_analysis_stats']['suspicious'] > 0 or analysis['attributes']['last_analysis_stats']['timeout'] > 25 or analysis['attributes']['last_analysis_stats']['confirmed-timeout'] > 25:
             printSus(file, analysis)
-        return
+            return
+            
+        if analysis['attributes']['first_submission_date'] > min_first_submit:
+            printTime(file, analysis)
+            return
 
+        if analysis['attributes']['last_analysis_date'] < min_last_analysis:
+            vtInfo = submitFile(file, hash)
+            analysis = vtInfo.to_dict()
+            if analysis['attributes']['last_analysis_stats']['malicious'] > 0 or analysis['attributes']['last_analysis_stats']['suspicious'] > 0 or analysis['attributes']['last_analysis_stats']['timeout'] > 25 or analysis['attributes']['last_analysis_stats']['confirmed-timeout'] > 25:
+                printSus(file, analysis)
+            return
+    except Exception as e:
+        print("Error >> " + file )
+        print(e)
     return
 
     
