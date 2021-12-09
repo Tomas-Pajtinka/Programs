@@ -7,6 +7,10 @@ struct Executable{
 } executable, *executablePtr;
 
 
+int alignSize(DWORD aligment, DWORD size){
+    return ((size / aligment) + 1 ) * aligment;
+}
+
 //function loads PE into memory
 void loadPeToRemoteProcess(struct Executable *executable){
     //parse DOS and PE header
