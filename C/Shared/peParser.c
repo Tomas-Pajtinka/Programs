@@ -12,7 +12,7 @@ int alignSize(DWORD aligment, DWORD size){
 }
 
 //function loads PE into memory
-void loadPeToRemoteProcess(struct Executable *executable){
+LPVOID* loadPeToProcess(struct Executable *executable){
     //parse DOS and PE header
     IMAGE_DOS_HEADER* IDH = (IMAGE_DOS_HEADER*)executable->executableData;
     IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)((int)executable->executableData + IDH->e_lfanew);
@@ -62,10 +62,12 @@ void loadPeToRemoteProcess(struct Executable *executable){
 
     //TODO relocations 
      
+
+    return peBaseAddress;
 }
 
 //get offset of overlay
-int getExecutableEntryPoint(struct Executable *executable){
+DWORD getExecutableEntryPoint(struct Executable *executable){
     IMAGE_DOS_HEADER* IDH = (IMAGE_DOS_HEADER*)executable->executableData;
     IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)((int)executable->executableData + IDH->e_lfanew);
     return INH->OptionalHeader.AddressOfEntryPoint;
@@ -85,7 +87,22 @@ int getSizeOfPeFile(){
         sectionLocation = sectionLocation +sectionSize;
     }
     return size;
-}   
+}  
+
+int getSizeOfPeFile_Virtual(struct Executable *executable){
+    IMAGE_DOS_HEADER* IDH = (IMAGE_DOS_HEADER*)executable->executableData;
+    IMAGE_NT_HEADERS* INH = (IMAGE_NT_HEADERS*)((int)executable->executableData + IDH->e_lfanew);
+    DWORD sectionAlligmnet = INH->OptionalHeader.SectionAlignment;
+    int size = alignSize(sectionAlligmnet, INH->OptionalHeader.SizeOfHeaders);
+    DWORD sectionLocation = (DWORD)INH + sizeof(DWORD) /*PE signature*/ + (DWORD)(sizeof(IMAGE_FILE_HEADER)) + (DWORD)INH->FileHeader.SizeOfOptionalHeader;
+    DWORD sectionSize = (DWORD)sizeof(IMAGE_SECTION_HEADER); //40 bytes
+    for (int i = 0; i < INH->FileHeader.NumberOfSections; i++) {    //loop through all sections and adds its sizes
+        PIMAGE_SECTION_HEADER sectionHeader = (PIMAGE_SECTION_HEADER)sectionLocation;
+        size = size + alignSize(sectionAlligmnet, sectionHeader->Misc.VirtualSize);
+        sectionLocation = sectionLocation +sectionSize;
+    }
+    return size;
+}
 
 
 DWORD getAddressOfExport(struct Executable *executable, char *export){
