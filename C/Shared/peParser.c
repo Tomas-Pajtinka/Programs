@@ -22,7 +22,7 @@ void loadPeToRemoteProcess(struct Executable *executable){
     LPVOID peBaseAddress = VirtualAlloc(NULL, INH->OptionalHeader.SizeOfImage, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
     LPVOID nextSectionAddress = peBaseAddress;
     if (nextSectionAddress == NULL){
-        perror("Injection failed. Could not allocate memory in process.\n");
+        //perror("Injection failed. Could not allocate memory in process.\n");
         exit(EXIT_FAILURE);
     }
     //write PE header to process
