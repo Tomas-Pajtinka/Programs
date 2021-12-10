@@ -6,6 +6,14 @@
 //#include "..\..\Shared\peParser.c"
 //#include "..\..\Shared\obfuscation.c"
 
+/* exmaple of usage
+char messageBox[12] = "\xe1\x38\x66\x5c\x58\x33\x19\xc0\xc3\x25\x54\x00";
+char user32dll[11] = "\xa9\x22\x7f\x2d\xfa\x65\x92\x46\x90\x3d\x00";
+inicialize();
+void (*mb)(HWND, LPCTSTR, LPCTSTR, UINT) = resolveApi(decodeSimpleXor(messageBox, 11, "\xac\x5d\x15\x2f\x39\x54\x7c\x82", 8), decodeSimpleXor(user32dll, 10, "\xfc\x51\x1a\x5f\xc9\x57\xbc\x22", 8));
+mb(0,"Dynamic API resolve succesfull.","Dynamic API resolve",0);
+*/
+
 FARPROC (*loadLibrary)(LPCSTR) = NULL; 
 FARPROC (*getProcAddress)(HMODULE, LPCSTR) = NULL;
 
